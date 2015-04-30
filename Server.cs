@@ -31,7 +31,7 @@ namespace FirstMessage_Server
             {
                 // Назначаем сокет локальной конечной точке и слушаем входящие сокеты
                 server.Bind(ipEndPoint);
-                server.Listen(1);
+                server.Listen(10);
 
                 // Начинаем слушать входящие соединения
                 while (true)
