@@ -14,7 +14,7 @@ namespace FirstMessage_Server
         {
             // Устанавливаем для сокета локальную конечную точку
             IPHostEntry ipHost = Dns.GetHostEntry("localhost");
-            IPAddress ipAddr = ipHost.AddressList[1];
+            IPAddress ipAddr = ipHost.AddressList[0];
             IPEndPoint ipEndPoint = new IPEndPoint(ipAddr, 2427);
 
             // Создаем сокеты для клиента и сервера
@@ -27,43 +27,44 @@ namespace FirstMessage_Server
             string inputData = String.Empty;            // Данные, приходящие с первого клиента
             int bytesRec = 0;                           // Длина входящих данных от первого клиента
 
-            try
-            {
+            try {
                 // Назначаем сокет локальной конечной точке и слушаем входящие сокеты
                 server.Bind(ipEndPoint);
                 server.Listen(10);
 
                 // Начинаем слушать входящие соединения
-                while (true)
-                {
+                while (true) {
                     Console.WriteLine("Ожидание клиента через {0}", ipEndPoint);
                     // Ожидаем входящее соединение
                     client = server.Accept();
                     Console.WriteLine("Клиент успешно подключен.\n");
 
                     // Если клиент, подключенный на данный момент, является первым, то запрашиваем у него сообщение
-                    if (isFirstClient)
-                    {
+                    if (isFirstClient) {
                         request = "Вы являетесь первым клиентом, пожалуйста отправьте сообщение для отправки другим клиентам.";
                         message = Encoding.UTF8.GetBytes(request);
                         client.Send(message);
 
                         bytesRec = client.Receive(bytes);
                         inputData = Encoding.UTF8.GetString(bytes, 0, bytesRec);
-                        Console.Write("Сообщение для пересылки другим клиентам: " + inputData + "\n\n");
+                        Console.WriteLine("Сообщение для пересылки другим клиентам: " + inputData + "\n");
                         message = Encoding.UTF8.GetBytes(inputData);
                         isFirstClient = false;
                     }
 
-                    // Закрываем соединение с текущим клиентом
                     client.Send(message);
-                    client.Shutdown(SocketShutdown.Both);
-                    client.Close();
-                    Console.Write("Соединение успешно завершено.\n\n\n");
+
+                    // Закрываем соединение с текущим клиентом
+                    try {
+                        client.Shutdown(SocketShutdown.Both);
+                        client.Close();
+                    } catch (Exception ex) {
+                        Console.WriteLine(ex.ToString());
+                    }
+                    
+                    Console.WriteLine("Соединение успешно завершено.\n\n");
                 }
-            }
-            catch (Exception ex)
-            {
+            } catch (Exception ex) {
                 Console.WriteLine(ex.ToString());
             }
 
